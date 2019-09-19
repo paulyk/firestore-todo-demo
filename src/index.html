@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scc=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Firestore Demo</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+
+<body>
+  <header>Firestore Demo</header>
+  <div class="user-status">
+    <div class="name" id="username"></div>
+    <div class="buttons">
+      <button class="sign-in-btn" id="sign-in-btn">Sign in</button>
+      <button class="sign-out-btn hide" id="sign-out-btn">Sign out</button>
+    </div>
+  </div>
+  <main>
+    <form>
+      <div class="input-form">
+        <input type="text" name="todo">
+        <button id="add-btn">Add</button>
+        <button id="reset-btn">Reset</button>
+      </div>
+    </form>
+    <div class="list" id="todo-list"></div>
+  </main>
+
+  <div class="global-error-wrap">
+    <div class="global-error" id="global-error">Some error</div>
+  </div>
+</body>
+
+</html>

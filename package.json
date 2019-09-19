@@ -1,0 +1,22 @@
+{
+  "name": "firestore-basic",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "parcel src/index.html",
+    "build": "parcel build src/index.html"
+  },
+  "keywords": [],
+  "author": "Paul Johnson <you@example.com> (example.com)",
+  "license": "any",
+  "devDependencies": {
+    "@babel/core": "^7.6.0",
+    "@babel/plugin-transform-runtime": "^7.6.0",
+    "parcel-bundler": "^1.12.3"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.6.0",
+    "firebase": "^6.6.1"
+  }
+}

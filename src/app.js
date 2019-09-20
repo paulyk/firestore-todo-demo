@@ -1,7 +1,5 @@
-import { firebase } from "@firebase/app"
-import "@firebase/firestore"
-import "@firebase/auth"
-import firebaseConfig from "./firebase.config"
+
+import { Auth, Db} from './firebase'
 
 const state = {
   db: null,
@@ -13,13 +11,10 @@ const state = {
 init()
 
 function init() {
-  firebase.initializeApp(firebaseConfig)
-
-  const db = firebase.firestore()
 
   state.todos = []
   state.db = {
-    todoCollection: db.collection("todos")
+    todoCollection: Db.collection("todos")
   }
 
   state.dom = {
@@ -44,7 +39,7 @@ function init() {
 }
 
 function abserveAuth() {
-  firebase.auth().onAuthStateChanged(userInfo => {
+  Auth.onAuthStateChanged(userInfo => {
     const { user } = state
     if (userInfo) {
       user.userInfo = userInfo
@@ -105,7 +100,6 @@ function deleteClick(evt) {
 
 function editClick(evt) {
   const id = evt.target.parentElement.getAttribute("data-id")
-  console.log("id", id)
   populateForm(id)
 }
 
@@ -212,7 +206,7 @@ async function signInClick(evt) {
       state.user = result.user
     })
     .catch(function(error) {
-      console.log(error)
+      showGlobalError(error.message)
     })
 }
 

@@ -11,12 +11,17 @@ const state = {
 init()
 
 function init() {
+  initState() 
+  setEventListeners()
+  subscribeToDbChanges()
+  subscribeToAuthChanges()
+}
 
-  state.todos = []
+function initState() {
   state.db = {
     todoCollection: Db.collection("todos")
   }
-
+  
   state.dom = {
     signInButton: document.getElementById("sign-in-btn"),
     signOutButton: document.getElementById("sign-out-btn"),
@@ -27,18 +32,16 @@ function init() {
     todoList: document.getElementById("todo-list"),
     globalErrorWrap: document.querySelector('.global-error-wrap')
   }
-
+  
   state.user = {
     userInfo: null,
     isAuthenticated: false
   }
 
-  setEventListeners()
-  observe()
-  abserveAuth()
+  state.todos = []
 }
 
-function abserveAuth() {
+function subscribeToAuthChanges() {
   Auth.onAuthStateChanged(userInfo => {
     const { user } = state
     if (userInfo) {
@@ -52,7 +55,7 @@ function abserveAuth() {
   })
 }
 
-function observe() {
+function subscribeToDbChanges() {
   state.db.todoCollection.onSnapshot(snap => {
     snap.docChanges().forEach(change => {
       updateTodos(change)
@@ -72,7 +75,7 @@ function _saveTodo() {
   const id = form.getAttribute("data-id")
   const text = form.todo.value
   if (id) {
-    return state.db.todoCollection.doc(id).set({ text })
+    return state.db.todoCollection.doc(id).update({ text })
   } else {
     return state.db.todoCollection.add({ text })
   }
@@ -88,18 +91,26 @@ function saveClick(evt) {
   saveTodo()
 }
 
+function updateDoneStatus(evt) {
+  const { todoCollection } = state.db
+  const id = evt.target.closest('[data-id]').getAttribute('data-id')
+
+  const done = evt.target.checked 
+  todoCollection.doc(id).update({ done })
+}
+
 function resetClick(evt) {
   evt.preventDefault()
   clearForm()
 }
 
 function deleteClick(evt) {
-  const id = evt.target.parentElement.getAttribute("data-id")
+  const id = evt.target.closest('[data-id]').getAttribute('data-id')
   state.db.todoCollection.doc(id).delete()
 }
 
 function editClick(evt) {
-  const id = evt.target.parentElement.getAttribute("data-id")
+  const id = evt.target.closest('[data-id]').getAttribute('data-id')
   populateForm(id)
 }
 
@@ -128,6 +139,7 @@ function clearForm() {
   form.todo.value = ""
   addTodoButton.textContent = "Add"
 }
+
 
 function updateTodos(change) {
   const { todos } = state
@@ -177,23 +189,59 @@ function renderTodos() {
   state.dom.todoList.innerHTML = ""
 
   for (let todo of todos) {
-    const todoEl = document.createElement("div")
-    todoEl.className = "list-item"
-    todoEl.setAttribute("data-id", todo.id)
-
-    const contentEl = document.createElement("a")
-    contentEl.textContent = todo.text
-    contentEl.onclick = editClick
-
-    const deleteLinkEl = document.createElement("a")
-    deleteLinkEl.textContent = "delete"
-    deleteLinkEl.onclick = deleteClick
-
-    todoEl.appendChild(contentEl)
-    todoEl.appendChild(deleteLinkEl)
+    const todoEl = createTodoElement(todo)
 
     state.dom.todoList.appendChild(todoEl)
   }
+}
+
+function createTodoElement(todo) {
+  const todoEl = document.createElement("div")
+    todoEl.className = "list-item"
+    todoEl.setAttribute("data-id", todo.id)
+
+    const todoText = document.createElement("a")
+    todoText.textContent = todo.text
+    todoText.onclick = editClick
+
+    // actions
+    const actionGroup = document.createElement('div')
+    actionGroup.className = "actions"
+
+    
+    const doneCheckbox = createCheckBox(todo)
+
+    const deleteLink = document.createElement("a")
+    deleteLink.textContent = "delete"
+    deleteLink.onclick = deleteClick
+
+    actionGroup.appendChild(doneCheckbox)
+    actionGroup.appendChild(deleteLink)
+
+    todoEl.appendChild(todoText)
+    todoEl.appendChild(actionGroup)
+    return todoEl
+}
+
+function createCheckBox(todo) {
+  const wrap = document.createElement('div')
+  wrap.className = "checkbox-wrap"
+
+  const cb_id = `cb-${todo.id}`
+
+  const checkbox = document.createElement('input')
+  checkbox.setAttribute('type', "checkbox")
+  checkbox.setAttribute('id', cb_id)
+  checkbox.checked = todo.done
+  checkbox.oninput = updateDoneStatus
+
+  const label = document.createElement('label')
+  label.setAttribute("for", cb_id)
+
+  wrap.appendChild(checkbox)
+  wrap.appendChild(label)
+
+  return wrap
 }
 
 async function signInClick(evt) {
@@ -227,5 +275,5 @@ function showGlobalError(msg) {
   contentEl.textContent = msg
   setTimeout(() => {
     globalErrorWrap.style.display = 'none'
-  }, 3000)
+  }, 5000)
 }
